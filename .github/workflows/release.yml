@@ -1,0 +1,34 @@
+name: Create Release ZIP
+
+on:
+  release:
+    types: [published]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Prepare files and create ZIP
+        run: |
+          mkdir -p temp_archive
+          
+          cp -r ./Plugins temp_archive/
+          
+          cp ./LICENSE temp_archive/
+          
+          cd temp_archive
+          zip -r ../AS-Loader-${{ github.ref_name }}.zip .
+          cd ..
+          
+          rm -rf temp_archive
+
+      - name: Upload Release Asset
+        uses: softprops/action-gh-release@v2
+        with:
+          files: AS-Loader-${{ github.ref_name }}.zip
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
