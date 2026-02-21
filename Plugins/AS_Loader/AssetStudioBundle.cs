@@ -19,6 +19,7 @@ using static AssetStudio.JsonConverterHelper;
 public class AssetStudioBundle
 {
     private BundleFile bundle;
+    private string cache_key;
 
     public bool isLoaded = false;
     public bool MeshLazyLoad = true;
@@ -28,9 +29,10 @@ public class AssetStudioBundle
     public HashSet<string> assetsFileListHash = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
     public ConcurrentDictionary<string, BinaryReader> resourceFileReaders = new ConcurrentDictionary<string, BinaryReader>(StringComparer.OrdinalIgnoreCase);
 
-    public AssetStudioBundle(FileReader reader, bool isMultiBundle = false)
+    public AssetStudioBundle(FileReader reader, string cache = null, bool isMultiBundle = false)
     {
         bundle = new BundleFile(reader, isMultiBundle);
+        cache_key = cache;
         isLoaded = LoadBundleFiles(reader);
         AssetStudioLogger.Log($"[AssetStudioBundle] {reader.FileName} isLoaded:{isLoaded}", true);
     }
@@ -738,6 +740,9 @@ public class AssetStudioBundle
         return null;
     }
 
+    /// <summary>
+    /// Debug all objects in the AssetStudioBundle.
+    /// </summary>
     public void DebugAllObjects()
     {
         if (AssetsFileList != null)
@@ -765,5 +770,21 @@ public class AssetStudioBundle
         {
             AssetStudioLogger.Warn("AssetsFileList null");
         }
+    }
+
+    /// <summary>
+    /// Return cache_key in the AssetStudioBundle or null.
+    /// </summary>
+    public string GetCacheKey()
+    {
+        return cache_key;
+    }
+
+    /// <summary>
+    /// Unload AssetStudioBundle if cached.
+    /// </summary>
+    public void Unload()
+    {
+        if(cache_key != null) AssetStudioLoader.Unload(cache_key);
     }
 }
